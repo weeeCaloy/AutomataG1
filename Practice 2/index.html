@@ -47,6 +47,9 @@
       </div>
       <nav class="nav-pills">
         <button class="nav-pill active" data-section="calculator">Calculator</button>
+        <button class="nav-pill" data-section="workbench">Workbench</button>
+        <button class="nav-pill" data-section="tests">Test Suite</button>
+        <button class="nav-pill" data-section="simulator">Simulator</button>
         <button class="nav-pill" data-section="theory">Theory</button>
         <button class="nav-pill" data-section="examples">Examples</button>
       </nav>
@@ -127,9 +130,69 @@
       <!-- Stage 1: DFA Lexer -->
       <div class="stage-card" id="stage1Card">
         <div class="stage-header">
-          <div class="stage-badge stage-badge-1">Stage 1</div>
-          <h3 class="stage-title">Finite Automaton <span class="stage-type">(DFA)</span></h3>
-          <p class="stage-role">Lexical Analysis — Tokenizer</p>
+          <div class="stage-header-top">
+            <div class="stage-badge stage-badge-1">Stage 1</div>
+            <div class="stage-formal-pill">M = (Q, Σ, δ, q₀, F)</div>
+          </div>
+          <h3 class="stage-title">Deterministic Finite Automaton <span class="stage-type">(DFA Lexer)</span></h3>
+          <p class="stage-role">Lexical Analysis — Deterministic Tokenizer Driving State Transitions</p>
+        </div>
+
+        <!-- Stage 1 Interactive Controls Toolbar -->
+        <div class="stage1-toolbar">
+          <div class="stage1-controls">
+            <button id="stage1StepBack" class="sim-btn sim-btn-ghost" title="Step Backward (Previous State)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+              Step Back
+            </button>
+            <button id="stage1PlayPause" class="sim-btn sim-btn-primary" title="Play / Pause DFA Execution">
+              <svg id="stage1PlayIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9z"/></svg>
+              <span id="stage1PlayText">Play</span>
+            </button>
+            <button id="stage1StepForward" class="sim-btn sim-btn-primary" title="Step Forward (Next State)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+              Step Forward
+            </button>
+            <button id="stage1Reset" class="sim-btn sim-btn-ghost" title="Reset DFA to Start State">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 105.64-8.36L1 10"/></svg>
+              Reset
+            </button>
+          </div>
+          <div class="stage1-speed-wrap">
+            <span class="sim-speed-label">Speed</span>
+            <input type="range" id="stage1Speed" min="80" max="1200" value="450" class="sim-slider">
+          </div>
+          <div class="stage1-counter-wrap">
+            <span id="stage1StepCounter" class="stage1-step-badge">Step 0 / 0</span>
+          </div>
+        </div>
+
+        <!-- Stage 1 Real-time HUD Dashboard -->
+        <div class="stage1-hud">
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Current Char</span>
+            <div class="stage1-hud-value"><span id="stage1CurChar" class="stage1-char-pill">—</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Char Class</span>
+            <div class="stage1-hud-value"><span id="stage1CharClass" class="stage1-class-pill">—</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">DFA Transition</span>
+            <div class="stage1-hud-value stage1-hud-trans-val">
+              <span id="stage1PrevState" class="stage1-state-pill">START</span>
+              <span class="stage1-trans-arrow">→</span>
+              <span id="stage1NextState" class="stage1-state-pill">START</span>
+            </div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Token Buffer</span>
+            <div class="stage1-hud-value"><span id="stage1Buffer" class="stage1-buffer-text">[ empty ]</span></div>
+          </div>
+          <div class="stage1-hud-card stage1-hud-action-card">
+            <span class="stage1-hud-label">Action Performed</span>
+            <div class="stage1-hud-value"><span id="stage1Action" class="stage1-action-text">Enter an expression and parse to begin DFA lexing.</span></div>
+          </div>
         </div>
 
         <div class="stage-body">
@@ -137,136 +200,410 @@
           <div class="automaton-visual">
             <h4 class="visual-title">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              State Machine
+              State Machine (DFA Transition Graph)
             </h4>
             <div class="dfa-diagram" id="dfaDiagram">
-              <svg viewBox="0 0 680 260" class="dfa-svg">
-                <!-- Arrow into START -->
-                <line x1="10" y1="60" x2="45" y2="60" stroke="rgba(168,85,247,0.4)" stroke-width="1.5" marker-end="url(#arrowPurple)"/>
-
-                <!-- State: START -->
-                <circle cx="80" cy="60" r="30" class="dfa-state" id="dfaStateStart" />
-                <text x="80" y="65" class="dfa-label">START</text>
-
-                <!-- Transition: digit → INTEGER -->
-                <path d="M110 55 Q 160 20 210 55" fill="none" stroke="rgba(168,85,247,0.3)" stroke-width="1.5" class="dfa-transition" id="dfaTransDigit"/>
-                <text x="160" y="25" class="dfa-trans-label">digit</text>
-                <circle cx="240" cy="60" r="30" class="dfa-state" id="dfaStateInt"/>
-                <circle cx="240" cy="60" r="25" class="dfa-state-inner" />
-                <text x="240" y="65" class="dfa-label">INT</text>
-                <!-- Self-loop on INT -->
-                <path d="M240 30 Q 260 5 240 30" fill="none" stroke="rgba(168,85,247,0.2)" stroke-width="1" />
-                <text x="262" y="18" class="dfa-trans-label-sm">digit</text>
-
-                <!-- Transition: dot → DECIMAL -->
-                <path d="M270 60 L 370 60" fill="none" stroke="rgba(6,182,212,0.3)" stroke-width="1.5" class="dfa-transition" id="dfaTransDot"/>
-                <text x="320" y="50" class="dfa-trans-label">.</text>
-                <circle cx="400" cy="60" r="30" class="dfa-state" id="dfaStateDec"/>
-                <circle cx="400" cy="60" r="25" class="dfa-state-inner"/>
-                <text x="400" y="65" class="dfa-label">DEC</text>
-
-                <!-- Transition: operator → OPERATOR -->
-                <path d="M80 90 Q 80 160 180 170" fill="none" stroke="rgba(251,191,36,0.3)" stroke-width="1.5" class="dfa-transition" id="dfaTransOp"/>
-                <text x="100" y="145" class="dfa-trans-label">+−*/</text>
-                <circle cx="210" cy="175" r="30" class="dfa-state" id="dfaStateOp"/>
-                <circle cx="210" cy="175" r="25" class="dfa-state-inner"/>
-                <text x="210" y="180" class="dfa-label">OP</text>
-
-                <!-- Transition: ( → LPAREN -->
-                <path d="M110 70 Q 280 130 370 125" fill="none" stroke="rgba(34,197,94,0.3)" stroke-width="1.5" class="dfa-transition" id="dfaTransLP"/>
-                <text x="260" y="120" class="dfa-trans-label">(</text>
-                <circle cx="400" cy="130" r="30" class="dfa-state" id="dfaStateLP"/>
-                <circle cx="400" cy="130" r="25" class="dfa-state-inner"/>
-                <text x="400" y="135" class="dfa-label">LP</text>
-
-                <!-- Transition: ) → RPAREN -->
-                <path d="M110 75 Q 380 230 530 175" fill="none" stroke="rgba(244,63,94,0.3)" stroke-width="1.5" class="dfa-transition" id="dfaTransRP"/>
-                <text x="370" y="215" class="dfa-trans-label">)</text>
-                <circle cx="560" cy="175" r="30" class="dfa-state" id="dfaStateRP"/>
-                <circle cx="560" cy="175" r="25" class="dfa-state-inner"/>
-                <text x="560" y="180" class="dfa-label">RP</text>
-
-                <!-- Transition: space → START (self-loop) -->
-                <path d="M80 30 Q 60 5 80 30" fill="none" stroke="rgba(168,85,247,0.15)" stroke-width="1"/>
-                <text x="55" y="12" class="dfa-trans-label-sm">space</text>
-
+              <svg viewBox="0 0 740 270" class="dfa-svg" id="dfaStateSvg">
                 <defs>
                   <marker id="arrowPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(168,85,247,0.6)"/>
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(168,85,247,0.7)"/>
+                  </marker>
+                  <marker id="arrowAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(251,191,36,0.9)"/>
+                  </marker>
+                  <marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(6,182,212,0.7)"/>
+                  </marker>
+                  <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(34,197,94,0.7)"/>
+                  </marker>
+                  <marker id="arrowRose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(244,63,94,0.7)"/>
                   </marker>
                 </defs>
+
+                <!-- Initial Start Arrow -->
+                <line x1="12" y1="135" x2="40" y2="135" stroke="rgba(168,85,247,0.6)" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+                <!-- ==================== TRANSITIONS ==================== -->
+                <!-- START -> START (whitespace loop) -->
+                <path d="M 50 148 C 22 170 22 192 56 156" fill="none" class="dfa-transition" id="dfaTrans_START_START"/>
+                <text x="18" y="185" class="dfa-trans-label-sm">space</text>
+
+                <!-- START -> INTEGER (digit) -->
+                <path d="M 88 116 Q 135 65 184 57" fill="none" class="dfa-transition" id="dfaTrans_START_INTEGER" marker-end="url(#arrowPurple)"/>
+                <text x="135" y="76" class="dfa-trans-label">digit</text>
+
+                <!-- INTEGER -> INTEGER (digit loop) -->
+                <path d="M 198 32 C 190 6 230 6 222 32" fill="none" class="dfa-transition" id="dfaTrans_INTEGER_INTEGER"/>
+                <text x="210" y="16" class="dfa-trans-label-sm">digit</text>
+
+                <!-- INTEGER -> DOT (.) -->
+                <path d="M 236 55 L 334 55" fill="none" class="dfa-transition" id="dfaTrans_INTEGER_DOT" marker-end="url(#arrowCyan)"/>
+                <text x="285" y="47" class="dfa-trans-label">.</text>
+
+                <!-- START -> DOT (.) -->
+                <path d="M 94 122 Q 220 95 336 63" fill="none" class="dfa-transition" id="dfaTrans_START_DOT" marker-end="url(#arrowCyan)"/>
+                <text x="215" y="96" class="dfa-trans-label">.</text>
+
+                <!-- DOT -> DECIMAL (digit) -->
+                <path d="M 384 55 L 484 55" fill="none" class="dfa-transition" id="dfaTrans_DOT_DECIMAL" marker-end="url(#arrowPurple)"/>
+                <text x="434" y="47" class="dfa-trans-label">digit</text>
+
+                <!-- DECIMAL -> DECIMAL (digit loop) -->
+                <path d="M 498 32 C 490 6 530 6 522 32" fill="none" class="dfa-transition" id="dfaTrans_DECIMAL_DECIMAL"/>
+                <text x="510" y="16" class="dfa-trans-label-sm">digit</text>
+
+                <!-- START -> OPERATOR (+-*/) -->
+                <path d="M 88 154 Q 135 205 184 213" fill="none" class="dfa-transition" id="dfaTrans_START_OPERATOR" marker-end="url(#arrowAmber)"/>
+                <text x="135" y="196" class="dfa-trans-label">+−*/</text>
+
+                <!-- START -> LPAREN (() -->
+                <path d="M 94 148 Q 220 170 334 207" fill="none" class="dfa-transition" id="dfaTrans_START_LPAREN" marker-end="url(#arrowGreen)"/>
+                <text x="215" y="178" class="dfa-trans-label">(</text>
+
+                <!-- START -> RPAREN ()) -->
+                <path d="M 96 150 Q 280 238 484 220" fill="none" class="dfa-transition" id="dfaTrans_START_RPAREN" marker-end="url(#arrowRose)"/>
+                <text x="330" y="240" class="dfa-trans-label">)</text>
+
+                <!-- Token Return / Reset transitions (dashed) -->
+                <path d="M 192 76 Q 145 110 96 130" fill="none" stroke-dasharray="3 3" class="dfa-transition dfa-trans-return" id="dfaTrans_INTEGER_START"/>
+                <path d="M 494 76 Q 300 120 96 132" fill="none" stroke-dasharray="3 3" class="dfa-transition dfa-trans-return" id="dfaTrans_DECIMAL_START"/>
+                <path d="M 192 196 Q 145 160 96 140" fill="none" stroke-dasharray="3 3" class="dfa-transition dfa-trans-return" id="dfaTrans_OPERATOR_START"/>
+                <path d="M 344 196 Q 220 150 96 138" fill="none" stroke-dasharray="3 3" class="dfa-transition dfa-trans-return" id="dfaTrans_LPAREN_START"/>
+                <path d="M 494 196 Q 290 155 96 138" fill="none" stroke-dasharray="3 3" class="dfa-transition dfa-trans-return" id="dfaTrans_RPAREN_START"/>
+
+                <!-- Error Transitions -->
+                <path d="M 96 135 L 634 135" fill="none" stroke-dasharray="4 2" class="dfa-transition dfa-trans-error" id="dfaTrans_START_ERROR" marker-end="url(#arrowRose)"/>
+                <text x="370" y="130" class="dfa-trans-label-sm" fill="#f43f5e">unknown</text>
+
+                <path d="M 382 68 Q 520 100 636 126" fill="none" stroke-dasharray="3 2" class="dfa-transition dfa-trans-error" id="dfaTrans_DOT_ERROR" marker-end="url(#arrowRose)"/>
+                <path d="M 534 74 Q 590 95 636 122" fill="none" stroke-dasharray="3 2" class="dfa-transition dfa-trans-error" id="dfaTrans_DECIMAL_ERROR" marker-end="url(#arrowRose)"/>
+
+                <!-- ==================== STATES ==================== -->
+                <!-- START -->
+                <circle cx="70" cy="135" r="26" class="dfa-state" id="dfaState_START"/>
+                <text x="70" y="140" class="dfa-label">START</text>
+
+                <!-- INTEGER (Accepting) -->
+                <circle cx="210" cy="55" r="26" class="dfa-state accept-state" id="dfaState_INTEGER"/>
+                <circle cx="210" cy="55" r="21" class="dfa-state-inner"/>
+                <text x="210" y="59" class="dfa-label">INT</text>
+
+                <!-- DOT (Intermediate) -->
+                <circle cx="360" cy="55" r="24" class="dfa-state" id="dfaState_DOT"/>
+                <text x="360" y="59" class="dfa-label">DOT</text>
+
+                <!-- DECIMAL (Accepting) -->
+                <circle cx="510" cy="55" r="26" class="dfa-state accept-state" id="dfaState_DECIMAL"/>
+                <circle cx="510" cy="55" r="21" class="dfa-state-inner"/>
+                <text x="510" y="59" class="dfa-label">DEC</text>
+
+                <!-- OPERATOR (Accepting) -->
+                <circle cx="210" cy="215" r="26" class="dfa-state accept-state" id="dfaState_OPERATOR"/>
+                <circle cx="210" cy="215" r="21" class="dfa-state-inner"/>
+                <text x="210" y="219" class="dfa-label">OP</text>
+
+                <!-- LPAREN (Accepting) -->
+                <circle cx="360" cy="215" r="26" class="dfa-state accept-state" id="dfaState_LPAREN"/>
+                <circle cx="360" cy="215" r="21" class="dfa-state-inner"/>
+                <text x="360" y="219" class="dfa-label">LP</text>
+
+                <!-- RPAREN (Accepting) -->
+                <circle cx="510" cy="215" r="26" class="dfa-state accept-state" id="dfaState_RPAREN"/>
+                <circle cx="510" cy="215" r="21" class="dfa-state-inner"/>
+                <text x="510" y="219" class="dfa-label">RP</text>
+
+                <!-- ERROR (Trap) -->
+                <circle cx="660" cy="135" r="26" class="dfa-state error-state" id="dfaState_ERROR"/>
+                <text x="660" y="139" class="dfa-label" fill="#f43f5e">ERR</text>
               </svg>
             </div>
           </div>
 
-          <!-- Token Output -->
+          <!-- Token Output & Transition History -->
           <div class="stage-output">
-            <h4 class="visual-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-              Token Stream
-            </h4>
-            <div class="token-stream" id="tokenStream">
-              <div class="token-placeholder">Tokens will appear here after parsing...</div>
+            <!-- Tokens Recognized -->
+            <div class="stage1-tokens-wrap">
+              <h4 class="visual-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                Tokens Recognized
+              </h4>
+              <div class="token-stream" id="tokenStream">
+                <div class="token-placeholder">Tokens will appear here after parsing...</div>
+              </div>
+            </div>
+
+            <!-- Transition History Table -->
+            <div class="stage1-history-wrap">
+              <div class="stage1-history-header">
+                <h4 class="visual-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                  Transition History Log
+                </h4>
+                <span class="stage1-history-hint">Click row to inspect step</span>
+              </div>
+              <div class="stage1-trace-container" id="stage1TraceContainer">
+                <table class="stage1-trace-table" id="stage1TraceTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Char</th>
+                      <th>Class</th>
+                      <th>Prev</th>
+                      <th>Next</th>
+                      <th>Buffer</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stage1TraceBody">
+                    <tr><td colspan="7" class="stage1-trace-empty">Run expression to inspect transition log</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Stage 1 Verdict Banner -->
+        <div id="stage1Verdict" class="sim-verdict" style="display:none"></div>
       </div>
 
       <!-- Stage 2: PDA Parser -->
       <div class="stage-card" id="stage2Card">
         <div class="stage-header">
-          <div class="stage-badge stage-badge-2">Stage 2</div>
-          <h3 class="stage-title">Pushdown Automaton <span class="stage-type">(PDA)</span></h3>
-          <p class="stage-role">Syntax Analysis — Shunting-Yard Parser</p>
+          <div class="stage-header-top">
+            <div class="stage-badge stage-badge-2">Stage 2</div>
+            <div class="stage-formal-pill">M = (Q, Σ, Γ, δ, q₀, Z₀, F)</div>
+          </div>
+          <h3 class="stage-title">Pushdown Automaton <span class="stage-type">(PDA Syntax Analyzer)</span></h3>
+          <p class="stage-role">Syntax Analysis — Stack-Based Operator Resolution &amp; Infix-to-Postfix (RPN) Parser</p>
+        </div>
+
+        <!-- Stage 2 Interactive Controls Toolbar -->
+        <div class="stage2-toolbar">
+          <div class="stage2-controls">
+            <button id="stage2StepBack" class="sim-btn sim-btn-ghost" title="Step Backward (Previous Stack Configuration)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+              Step Back
+            </button>
+            <button id="stage2PlayPause" class="sim-btn sim-btn-primary" title="Play / Pause PDA Execution">
+              <svg id="stage2PlayIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9z"/></svg>
+              <span id="stage2PlayText">Play</span>
+            </button>
+            <button id="stage2StepForward" class="sim-btn sim-btn-primary" title="Step Forward (Next Stack Transition)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+              Step Forward
+            </button>
+            <button id="stage2Reset" class="sim-btn sim-btn-ghost" title="Reset PDA to Initial Configuration">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 105.64-8.36L1 10"/></svg>
+              Reset
+            </button>
+          </div>
+          <div class="stage2-speed-wrap">
+            <span class="sim-speed-label">Speed</span>
+            <input type="range" id="stage2Speed" min="80" max="1200" value="850" class="sim-slider">
+          </div>
+          <div class="stage2-counter-wrap">
+            <span id="stage2StepCounter" class="stage1-step-badge">Step 0 / 0</span>
+          </div>
+        </div>
+
+        <!-- Stage 2 Real-time HUD Dashboard -->
+        <div class="stage2-hud">
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Current Token</span>
+            <div class="stage1-hud-value"><span id="stage2CurToken" class="stage1-char-pill">—</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">PDA State</span>
+            <div class="stage1-hud-value"><span id="stage2CurState" class="stage1-state-pill">q_start</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Stack Top (Z₀=⊥)</span>
+            <div class="stage1-hud-value"><span id="stage2StackTop" class="stage1-class-pill">⊥</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Stack Operation</span>
+            <div class="stage1-hud-value"><span id="stage2StackOp" class="stage2-op-pill">NONE</span></div>
+          </div>
+          <div class="stage1-hud-card stage1-hud-action-card">
+            <span class="stage1-hud-label">Action &amp; Formal Transition Rule</span>
+            <div class="stage1-hud-value"><span id="stage2ActionReason" class="stage1-action-text">Awaiting tokens from DFA lexer...</span></div>
+          </div>
         </div>
 
         <div class="stage-body">
-          <!-- PDA Stack Visualization -->
+          <!-- PDA 3-Column Visualization -->
           <div class="automaton-visual">
             <h4 class="visual-title">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-              PDA Stack Operations
+              PDA Stack Operations &amp; Memory
             </h4>
             <div class="pda-visual" id="pdaVisual">
-              <div class="pda-columns">
+              <div class="pda-columns visible">
                 <div class="pda-col">
-                  <div class="pda-col-title">Input Queue</div>
+                  <div class="pda-col-title">
+                    <span>Input Queue</span>
+                    <span class="pda-col-hint">Remaining stream</span>
+                  </div>
                   <div class="pda-queue" id="pdaInputQueue"></div>
                 </div>
-                <div class="pda-col">
-                  <div class="pda-col-title">Operator Stack</div>
-                  <div class="pda-stack" id="pdaStack">
-                    <div class="stack-bottom">⊥</div>
+                <div class="pda-col pda-col-stack">
+                  <div class="pda-col-title">
+                    <span>Operator Stack (Γ)</span>
+                    <span class="pda-col-hint">Pushdown memory</span>
+                  </div>
+                  <div class="pda-stack-frame">
+                    <div class="pda-stack-top-indicator">TOP ▲</div>
+                    <div class="pda-stack" id="pdaStack">
+                      <div class="stack-bottom">⊥</div>
+                    </div>
                   </div>
                 </div>
                 <div class="pda-col">
-                  <div class="pda-col-title">Output Queue</div>
+                  <div class="pda-col-title">
+                    <span>Output Queue</span>
+                    <span class="pda-col-hint">Postfix stream</span>
+                  </div>
                   <div class="pda-queue" id="pdaOutputQueue"></div>
                 </div>
               </div>
-              <div class="pda-placeholder">PDA visualization will animate during parsing...</div>
             </div>
           </div>
 
-          <!-- Postfix Output -->
+          <!-- Postfix Output & History Table -->
           <div class="stage-output">
-            <h4 class="visual-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
-              Postfix Expression (RPN)
-            </h4>
-            <div class="postfix-output" id="postfixOutput">
-              <div class="token-placeholder">Postfix notation will appear here...</div>
+            <div class="stage2-postfix-wrap">
+              <h4 class="visual-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+                Postfix Expression (RPN)
+              </h4>
+              <div class="postfix-output" id="postfixOutput">
+                <div class="token-placeholder">Postfix notation will appear here...</div>
+              </div>
+            </div>
+
+            <div class="stage1-history-wrap">
+              <div class="stage1-history-header">
+                <h4 class="visual-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                  PDA Transition History Log
+                </h4>
+                <span class="stage1-history-hint">Click row to inspect step</span>
+              </div>
+              <div class="stage1-trace-container" id="stage2TraceContainer">
+                <table class="stage1-trace-table" id="stage2TraceTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>State</th>
+                      <th>Input</th>
+                      <th>Top</th>
+                      <th>Op</th>
+                      <th>Stack</th>
+                      <th>Output</th>
+                      <th>Rule / Precedence Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stage2TraceBody">
+                    <tr><td colspan="8" class="stage1-trace-empty">Parse expression to inspect PDA transitions</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Stage 2 Verdict Banner -->
+        <div id="stage2Verdict" class="sim-verdict" style="display:none"></div>
       </div>
 
-      <!-- Stage 3: Turing Machine Evaluator -->
+      <!-- Stage 3: Turing Machine & Evaluator -->
       <div class="stage-card" id="stage3Card">
         <div class="stage-header">
-          <div class="stage-badge stage-badge-3">Stage 3</div>
-          <h3 class="stage-title">Turing Machine <span class="stage-type">(TM)</span></h3>
-          <p class="stage-role">Evaluation — Postfix Expression Evaluator</p>
+          <div class="stage-header-top">
+            <div class="stage-badge stage-badge-3">Stage 3</div>
+            <div class="stage-formal-pill">M = (Q, Σ, Γ, δ, q₀, B, F)</div>
+          </div>
+          <h3 class="stage-title">Turing Machine <span class="stage-type">(TM &amp; Evaluator)</span></h3>
+          <p class="stage-role">Formal Single-Tape Automaton with δ(q, σ) → (p, σ', D) &amp; Arithmetic Reduction</p>
+
+          <!-- Distinction Banner -->
+          <div class="stage3-distinction-banner">
+            <span class="distinction-tag">Theory Distinction</span>
+            <span><strong>Pipeline Evaluator</strong> executes exact arithmetic without <code>eval()</code>. The <strong>Genuine TM Engine</strong> executes formal single-tape state transitions moving a read/write head over tape symbols.</span>
+          </div>
+
+          <!-- TM Mode Selector Tabs -->
+          <div class="stage3-mode-tabs">
+            <button id="stage3ModeEvaluator" class="stage3-mode-tab active" data-mode="evaluator">
+              <span class="mode-tab-dot"></span> Pipeline Arithmetic Evaluator
+            </button>
+            <button id="stage3ModeUnary" class="stage3-mode-tab" data-mode="unary_tm">
+              <span class="mode-tab-dot"></span> Genuine Unary Addition TM (1ᵐ + 1ⁿ)
+            </button>
+            <button id="stage3ModeBinary" class="stage3-mode-tab" data-mode="binary_tm">
+              <span class="mode-tab-dot"></span> Genuine Binary Incrementer TM (w + 1)
+            </button>
+          </div>
+        </div>
+
+        <!-- Stage 3 Interactive Controls Toolbar -->
+        <div class="stage3-toolbar">
+          <div class="stage3-controls">
+            <button id="stage3StepBack" class="sim-btn sim-btn-ghost" title="Step Backward (Previous Tape State)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+              Step Back
+            </button>
+            <button id="stage3PlayPause" class="sim-btn sim-btn-primary" title="Play / Pause TM Execution">
+              <svg id="stage3PlayIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9z"/></svg>
+              <span id="stage3PlayText">Play</span>
+            </button>
+            <button id="stage3StepForward" class="sim-btn sim-btn-primary" title="Step Forward (Next Tape Transition)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+              Step Forward
+            </button>
+            <button id="stage3Reset" class="sim-btn sim-btn-ghost" title="Reset TM to Initial Tape Configuration">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 105.64-8.36L1 10"/></svg>
+              Reset
+            </button>
+          </div>
+          <div class="stage3-speed-wrap">
+            <span class="sim-speed-label">Speed</span>
+            <input type="range" id="stage3Speed" min="80" max="1200" value="850" class="sim-slider">
+          </div>
+          <div class="stage3-counter-wrap">
+            <span id="stage3StepCounter" class="stage1-step-badge">Step 0 / 0</span>
+          </div>
+        </div>
+
+        <!-- Stage 3 Real-time HUD Dashboard -->
+        <div class="stage3-hud">
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Current State (Q)</span>
+            <div class="stage1-hud-value"><span id="stage3CurState" class="stage1-state-pill">q0</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Head Position</span>
+            <div class="stage1-hud-value"><span id="stage3HeadIdx" class="stage1-char-pill">Cell 0</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Read Symbol (Γ)</span>
+            <div class="stage1-hud-value"><span id="stage3ReadSym" class="stage1-class-pill">—</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Write Symbol</span>
+            <div class="stage1-hud-value"><span id="stage3WriteSym" class="stage1-class-pill">—</span></div>
+          </div>
+          <div class="stage1-hud-card">
+            <span class="stage1-hud-label">Head Move</span>
+            <div class="stage1-hud-value"><span id="stage3HeadMove" class="stage2-op-pill">NONE</span></div>
+          </div>
+          <div class="stage1-hud-card stage1-hud-action-card">
+            <span class="stage1-hud-label">Action &amp; Transition Rule</span>
+            <div class="stage1-hud-value"><span id="stage3Action" class="stage1-action-text">Awaiting evaluation...</span></div>
+          </div>
         </div>
 
         <div class="stage-body">
@@ -274,33 +611,68 @@
           <div class="automaton-visual">
             <h4 class="visual-title">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 6v12M7 6v12M17 6v12"/></svg>
-              Tape & Computation Steps
+              Turing Machine Infinite Tape &amp; R/W Head
             </h4>
             <div class="tm-visual" id="tmVisual">
-              <div class="tm-tape-container">
-                <div class="tm-head">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 19V5M5 12l7-7 7 7"/>
-                  </svg>
+              <div class="tm-tape-container visible">
+                <div class="tm-head-pointer" id="stage3HeadPointer">
+                  <div class="tm-head-marker">
+                    <span>HEAD</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21l-8-14h16z"/></svg>
+                  </div>
                 </div>
                 <div class="tm-tape" id="tmTape"></div>
               </div>
-              <div class="tm-steps" id="tmSteps"></div>
-              <div class="tm-placeholder">Turing Machine tape will animate during evaluation...</div>
+              <div class="tm-steps visible" id="tmSteps"></div>
             </div>
           </div>
 
-          <!-- Final Result -->
+          <!-- Final Result & History Table -->
           <div class="stage-output result-output">
-            <h4 class="visual-title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
-              Final Result
-            </h4>
-            <div class="result-display" id="resultDisplay">
-              <div class="token-placeholder">Result will appear here...</div>
+            <div class="stage3-result-wrap">
+              <h4 class="visual-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                Final Computation Result
+              </h4>
+              <div class="result-display" id="resultDisplay">
+                <div class="token-placeholder">Result will appear here...</div>
+              </div>
+            </div>
+
+            <div class="stage1-history-wrap">
+              <div class="stage1-history-header">
+                <h4 class="visual-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                  TM Transition History Log
+                </h4>
+                <span class="stage1-history-hint">Click row to inspect step</span>
+              </div>
+              <div class="stage1-trace-container" id="stage3TraceContainer">
+                <table class="stage1-trace-table" id="stage3TraceTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>State</th>
+                      <th>Head</th>
+                      <th>Read</th>
+                      <th>Write</th>
+                      <th>Move</th>
+                      <th>Next</th>
+                      <th>Tape Snapshot</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stage3TraceBody">
+                    <tr><td colspan="9" class="stage1-trace-empty">Run evaluation to inspect TM transitions</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Stage 3 Verdict Banner -->
+        <div id="stage3Verdict" class="sim-verdict" style="display:none"></div>
       </div>
 
       <!-- Error Display -->
@@ -313,6 +685,832 @@
         <div class="error-content">
           <h4>Processing Error</h4>
           <p id="errorMessage"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- AUTOMATA WORKBENCH SECTION — Formal Inspection & Live State  -->
+    <!-- ============================================================ -->
+    <section class="workbench-section" id="workbench" style="display:none">
+      <div class="sim-header-area">
+        <h2 class="section-title">Automata Theory Workbench</h2>
+        <p class="sim-subtitle">Inspect live formal 5-tuple and 7-tuple mathematical configurations, deterministic transition tables, and real-time execution states dynamically generated by your computation.</p>
+      </div>
+
+      <!-- Workbench Sub-tabs -->
+      <div class="sim-tabs wb-tabs">
+        <button class="sim-tab active" data-wb-tab="dfa">
+          <span class="sim-tab-icon">◎</span>
+          DFA Formal Inspector
+        </button>
+        <button class="sim-tab" data-wb-tab="pda">
+          <span class="sim-tab-icon">⇕</span>
+          PDA Formal Inspector
+        </button>
+        <button class="sim-tab" data-wb-tab="tm">
+          <span class="sim-tab-icon">▮</span>
+          Turing Machine Inspector
+        </button>
+      </div>
+
+      <!-- ======== DFA WORKBENCH PANEL ======== -->
+      <div class="wb-panel" id="wbDfa">
+        <div class="wb-grid">
+          <!-- Left: Formal Definition & Configuration -->
+          <div class="wb-col">
+            <div class="sim-formal-card">
+              <div class="sim-formal-header">
+                <h3>DFA Lexer Formal Definition</h3>
+                <div class="sim-formal-def">M = (Q, Σ, δ, q₀, F)</div>
+              </div>
+              <div class="sim-formal-body">
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Q</span>
+                  <span class="sim-formal-desc">States:</span>
+                  <code class="sim-formal-value" id="wbDfaStates">{START, INTEGER, DOT, DECIMAL, OPERATOR, LPAREN, RPAREN, ERROR}</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Σ</span>
+                  <span class="sim-formal-desc">Input Alphabet:</span>
+                  <code class="sim-formal-value" id="wbDfaAlphabet">{digit(0-9), dot(.), op(+,-,*,/), lparen((), rparen()), space, eof}</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">q₀</span>
+                  <span class="sim-formal-desc">Start State:</span>
+                  <code class="sim-formal-value" id="wbDfaStart">START</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">F</span>
+                  <span class="sim-formal-desc">Accept States:</span>
+                  <code class="sim-formal-value" id="wbDfaAccept">{INTEGER, DECIMAL, OPERATOR, LPAREN, RPAREN}</code>
+                </div>
+              </div>
+            </div>
+
+            <!-- Current Configuration Card -->
+            <div class="wb-config-card">
+              <h4 class="wb-card-title">Live Machine Configuration (q, w)</h4>
+              <div class="wb-config-rows">
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Current State (q):</span>
+                  <span id="wbDfaCurState" class="stage1-state-pill">START</span>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Remaining Input (w):</span>
+                  <code id="wbDfaRemainingInput" class="wb-code-val">ε</code>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Current Buffer:</span>
+                  <code id="wbDfaBuffer" class="wb-code-val">[ empty ]</code>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Status:</span>
+                  <span id="wbDfaStatus" class="wb-status-pill accepted">Ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Transition Table & Trace -->
+          <div class="wb-col">
+            <div class="sim-transition-table-wrap">
+              <h4 class="wb-card-title">δ Deterministic Transition Function</h4>
+              <div class="wb-table-container" id="wbDfaTransTable"></div>
+            </div>
+
+            <div class="wb-trace-wrap">
+              <h4 class="wb-card-title">Live Execution Trace</h4>
+              <div class="wb-trace-scroll" id="wbDfaTrace">
+                <div class="sim-trace-placeholder">Run an expression in the calculator to populate live execution trace.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======== PDA WORKBENCH PANEL ======== -->
+      <div class="wb-panel" id="wbPda" style="display:none">
+        <div class="wb-grid">
+          <!-- Left: Formal Definition & Configuration -->
+          <div class="wb-col">
+            <div class="sim-formal-card">
+              <div class="sim-formal-header">
+                <h3>PDA Syntax Analyzer Formal Definition</h3>
+                <div class="sim-formal-def">M = (Q, Σ, Γ, δ, q₀, Z₀, F)</div>
+              </div>
+              <div class="sim-formal-body">
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Q</span>
+                  <span class="sim-formal-desc">States:</span>
+                  <code class="sim-formal-value" id="wbPdaStates">{q_start, q_read, q_operand, q_op, q_pop, q_push_op, q_lparen, q_rparen, q_drain, q_accept, q_reject}</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Σ</span>
+                  <span class="sim-formal-desc">Input Alphabet:</span>
+                  <code class="sim-formal-value" id="wbPdaAlphabet">{NUMBER, +, -, *, /, (, ), $}</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Γ</span>
+                  <span class="sim-formal-desc">Stack Alphabet:</span>
+                  <code class="sim-formal-value" id="wbPdaStackAlphabet">{⊥, +, -, *, /, (}</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">q₀</span>
+                  <span class="sim-formal-desc">Start State:</span>
+                  <code class="sim-formal-value" id="wbPdaStart">q_start</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Z₀</span>
+                  <span class="sim-formal-desc">Initial Stack:</span>
+                  <code class="sim-formal-value" id="wbPdaInitialStack">⊥ (bottom marker)</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">F</span>
+                  <span class="sim-formal-desc">Accept States:</span>
+                  <code class="sim-formal-value" id="wbPdaAccept">{q_accept}</code>
+                </div>
+              </div>
+            </div>
+
+            <!-- Current Configuration Card -->
+            <div class="wb-config-card">
+              <h4 class="wb-card-title">Live Machine Configuration (q, w, α)</h4>
+              <div class="wb-config-rows">
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Current State (q):</span>
+                  <span id="wbPdaCurState" class="stage1-state-pill">q_start</span>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Remaining Input (w):</span>
+                  <code id="wbPdaRemainingInput" class="wb-code-val">ε</code>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Stack Contents (α):</span>
+                  <code id="wbPdaStackContents" class="wb-code-val">[ ⊥ ]</code>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Stack Top (X):</span>
+                  <span id="wbPdaStackTop" class="stage1-class-pill">⊥</span>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Output Queue:</span>
+                  <code id="wbPdaOutputQueue" class="wb-code-val">[ empty ]</code>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Status:</span>
+                  <span id="wbPdaStatus" class="wb-status-pill accepted">Ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Transition Table & Trace -->
+          <div class="wb-col">
+            <div class="sim-transition-table-wrap">
+              <h4 class="wb-card-title">δ(q, a, X) → (p, γ) PDA Transition Rules</h4>
+              <div class="wb-table-container" id="wbPdaTransTable"></div>
+            </div>
+
+            <div class="wb-trace-wrap">
+              <h4 class="wb-card-title">Live PDA Trace Log</h4>
+              <div class="wb-trace-scroll" id="wbPdaTrace">
+                <div class="sim-trace-placeholder">Run an expression in the calculator to populate PDA live trace.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======== TM WORKBENCH PANEL ======== -->
+      <div class="wb-panel" id="wbTm" style="display:none">
+        <div class="wb-grid">
+          <!-- Left: Formal Definition & Configuration -->
+          <div class="wb-col">
+            <div class="sim-formal-card">
+              <div class="sim-formal-header">
+                <h3>Turing Machine Formal Definition</h3>
+                <div class="sim-formal-def">M = (Q, Σ, Γ, δ, q₀, B, F)</div>
+              </div>
+              <div class="sim-formal-body">
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Q</span>
+                  <span class="sim-formal-desc">States:</span>
+                  <code class="sim-formal-value" id="wbTmStates">{q0, q_scan, q_eval, q_carry, q_done, q_accept, q_reject}</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Σ</span>
+                  <span class="sim-formal-desc">Input Alphabet:</span>
+                  <code class="sim-formal-value" id="wbTmAlphabet">{0, 1, +, -, *, /, number}</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">Γ</span>
+                  <span class="sim-formal-desc">Tape Alphabet:</span>
+                  <code class="sim-formal-value" id="wbTmTapeAlphabet">{0, 1, +, -, *, /, number, X, Y, □}</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">q₀</span>
+                  <span class="sim-formal-desc">Start State:</span>
+                  <code class="sim-formal-value" id="wbTmStart">q0</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">B</span>
+                  <span class="sim-formal-desc">Blank Symbol:</span>
+                  <code class="sim-formal-value" id="wbTmBlank">□</code>
+                </div>
+                <div class="sim-formal-row">
+                  <span class="sim-formal-symbol">F</span>
+                  <span class="sim-formal-desc">Halting States:</span>
+                  <code class="sim-formal-value" id="wbTmAccept">{q_accept, q_reject}</code>
+                </div>
+              </div>
+            </div>
+
+            <!-- Current Configuration Card -->
+            <div class="wb-config-card">
+              <h4 class="wb-card-title">Live Tape Configuration (u q v)</h4>
+              <div class="wb-config-rows">
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Current State (q):</span>
+                  <span id="wbTmCurState" class="stage1-state-pill">q0</span>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Head Position:</span>
+                  <span id="wbTmHeadPos" class="stage1-char-pill">Cell 0</span>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Tape Contents:</span>
+                  <code id="wbTmTapeDisplay" class="wb-code-val">[ □ ]</code>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Read Symbol:</span>
+                  <span id="wbTmReadSym" class="stage1-class-pill">—</span>
+                </div>
+                <div class="wb-config-row">
+                  <span class="wb-config-label">Halting Outcome:</span>
+                  <span id="wbTmStatus" class="wb-status-pill accepted">Ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Transition Table & Trace -->
+          <div class="wb-col">
+            <div class="sim-transition-table-wrap">
+              <h4 class="wb-card-title">δ(q, σ) → (p, σ', D) TM Transition Function</h4>
+              <div class="wb-table-container" id="wbTmTransTable"></div>
+            </div>
+
+            <div class="wb-trace-wrap">
+              <h4 class="wb-card-title">Live TM Execution Trace</h4>
+              <div class="wb-trace-scroll" id="wbTmTrace">
+                <div class="sim-trace-placeholder">Run an evaluation in the calculator or TM simulator to populate trace.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- AUTOMATED TEST SUITE SECTION                                  -->
+    <!-- ============================================================ -->
+    <section class="tests-section" id="tests" style="display:none">
+      <div class="sim-header-area">
+        <h2 class="section-title">Automata Validation &amp; Test Suite</h2>
+        <p class="sim-subtitle">Execute rigorous automated tests across all 3 automata stages. Verifies arithmetic correctness, PDA syntax rejection, DFA traps, division-by-zero detection, and Turing Machine computations.</p>
+      </div>
+
+      <div class="tests-toolbar-card">
+        <div class="tests-toolbar-actions">
+          <button id="runAllTestsBtn" class="sim-btn sim-btn-primary tests-run-all-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9z"/></svg>
+            Run All Automated Tests
+          </button>
+          <span class="tests-note">Tests execute live against actual simulation engines. Outcomes are computed dynamically.</span>
+        </div>
+
+        <div class="tests-stats-pill">
+          <div class="test-stat-item">
+            <span class="test-stat-label">Total Tests</span>
+            <span class="test-stat-val" id="testStatTotal">13</span>
+          </div>
+          <div class="test-stat-item">
+            <span class="test-stat-label">Passed</span>
+            <span class="test-stat-val pass-val" id="testStatPassed">0</span>
+          </div>
+          <div class="test-stat-item">
+            <span class="test-stat-label">Failed</span>
+            <span class="test-stat-val fail-val" id="testStatFailed">0</span>
+          </div>
+          <div class="test-stat-item">
+            <span class="test-stat-label">Time</span>
+            <span class="test-stat-val" id="testStatTime">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tests-table-card">
+        <div class="tests-table-container">
+          <table class="stage1-trace-table tests-table" id="testTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Expression / Input</th>
+                <th>Target Automaton</th>
+                <th>Expected Outcome</th>
+                <th>Actual Result</th>
+                <th>Verdict</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="testTableBody">
+              <!-- Populated dynamically by TestRunner -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SIMULATOR SECTION — Interactive Automata Simulation          -->
+    <!-- ============================================================ -->
+    <section class="simulator-section" id="simulator" style="display:none">
+      <div class="sim-header-area">
+        <h2 class="section-title">Interactive Automata Simulator</h2>
+        <p class="sim-subtitle">Build, configure, and step through real automata. Define transition rules, provide input, and watch the machine execute.</p>
+      </div>
+
+      <!-- Simulator Sub-tabs -->
+      <div class="sim-tabs">
+        <button class="sim-tab active" data-sim="dfa">
+          <span class="sim-tab-icon">◎</span>
+          DFA Simulator
+        </button>
+        <button class="sim-tab" data-sim="pda">
+          <span class="sim-tab-icon">⇕</span>
+          PDA Simulator
+        </button>
+        <button class="sim-tab" data-sim="tm">
+          <span class="sim-tab-icon">▮</span>
+          TM Simulator
+        </button>
+      </div>
+
+      <!-- ======== DFA SIMULATOR ======== -->
+      <div class="sim-panel" id="simDfa">
+
+        <!-- Formal Definition -->
+        <div class="sim-formal-card">
+          <div class="sim-formal-header">
+            <h3>DFA — Deterministic Finite Automaton</h3>
+            <div class="sim-formal-def">M = (Q, Σ, δ, q₀, F)</div>
+          </div>
+          <div class="sim-formal-body">
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Q</span>
+              <span class="sim-formal-desc">States:</span>
+              <code class="sim-formal-value" id="dfaSimStatesDisplay">{q0, q1, q2}</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Σ</span>
+              <span class="sim-formal-desc">Alphabet:</span>
+              <code class="sim-formal-value" id="dfaSimAlphabetDisplay">{0, 1}</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">q₀</span>
+              <span class="sim-formal-desc">Start state:</span>
+              <code class="sim-formal-value" id="dfaSimStartDisplay">q0</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">F</span>
+              <span class="sim-formal-desc">Accept states:</span>
+              <code class="sim-formal-value" id="dfaSimAcceptDisplay">{q2}</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuration & Controls -->
+        <div class="sim-config-grid">
+          <!-- Left: Configuration -->
+          <div class="sim-config-panel">
+            <h4 class="sim-panel-title">Configuration</h4>
+
+            <div class="sim-field">
+              <label>Preset Machines</label>
+              <select id="dfaPreset" class="sim-select">
+                <option value="binary_even_zeros">Binary strings with even number of 0s</option>
+                <option value="ends_with_01">Strings ending with "01"</option>
+                <option value="divisible_by_3">Binary number divisible by 3</option>
+                <option value="contains_aba">Strings containing "aba" over {a,b}</option>
+                <option value="custom">Custom DFA...</option>
+              </select>
+            </div>
+
+            <div id="dfaCustomConfig" style="display:none">
+              <div class="sim-field">
+                <label>States (comma-separated)</label>
+                <input type="text" id="dfaCustomStates" class="sim-input" placeholder="q0, q1, q2" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Alphabet (comma-separated)</label>
+                <input type="text" id="dfaCustomAlphabet" class="sim-input" placeholder="0, 1" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Start State</label>
+                <input type="text" id="dfaCustomStart" class="sim-input" placeholder="q0" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Accept States (comma-separated)</label>
+                <input type="text" id="dfaCustomAccept" class="sim-input" placeholder="q2" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Transitions (one per line: state,symbol→next_state)</label>
+                <textarea id="dfaCustomTransitions" class="sim-textarea" placeholder="q0,0→q1&#10;q0,1→q0&#10;q1,0→q0&#10;q1,1→q1" spellcheck="false"></textarea>
+              </div>
+              <button id="dfaApplyCustom" class="sim-btn sim-btn-secondary">Apply Custom DFA</button>
+            </div>
+
+            <div class="sim-field">
+              <label>Input String</label>
+              <div class="sim-input-row">
+                <input type="text" id="dfaSimInput" class="sim-input sim-input-mono" placeholder="e.g. 01001" value="01001" spellcheck="false">
+              </div>
+            </div>
+
+            <div class="sim-controls">
+              <button id="dfaSimStep" class="sim-btn sim-btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 4l14 8-14 8z"/></svg>
+                Step
+              </button>
+              <button id="dfaSimRun" class="sim-btn sim-btn-accent">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9z"/></svg>
+                Run All
+              </button>
+              <button id="dfaSimReset" class="sim-btn sim-btn-ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 105.64-8.36L1 10"/></svg>
+                Reset
+              </button>
+            </div>
+
+            <!-- Speed Control -->
+            <div class="sim-field sim-speed-control">
+              <label>Animation Speed</label>
+              <div class="sim-speed-row">
+                <span class="sim-speed-label">Slow</span>
+                <input type="range" id="dfaSimSpeed" min="100" max="1500" value="500" class="sim-slider">
+                <span class="sim-speed-label">Fast</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Visualization -->
+          <div class="sim-visual-panel">
+            <h4 class="sim-panel-title">Live State Diagram</h4>
+
+            <!-- Input Tape -->
+            <div class="sim-input-tape" id="dfaSimTape">
+              <div class="sim-tape-label">Input Tape</div>
+              <div class="sim-tape-cells" id="dfaSimTapeCells"></div>
+            </div>
+
+            <!-- State Diagram (dynamically generated SVG) -->
+            <div class="sim-state-diagram" id="dfaSimDiagram">
+              <div class="sim-diagram-placeholder">Select a preset or configure a custom DFA, then enter input to begin simulation.</div>
+            </div>
+
+            <!-- Transition Table -->
+            <div class="sim-transition-table-wrap">
+              <h4 class="sim-panel-title">δ Transition Table</h4>
+              <div class="sim-transition-table" id="dfaSimTransTable"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Execution Trace -->
+        <div class="sim-trace-card">
+          <h4 class="sim-panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            Execution Trace
+          </h4>
+          <div class="sim-trace" id="dfaSimTrace">
+            <div class="sim-trace-placeholder">Execution trace will appear here as the automaton processes input...</div>
+          </div>
+          <div class="sim-verdict" id="dfaSimVerdict"></div>
+        </div>
+      </div>
+
+      <!-- ======== PDA SIMULATOR ======== -->
+      <div class="sim-panel" id="simPda" style="display:none">
+
+        <div class="sim-formal-card">
+          <div class="sim-formal-header">
+            <h3>PDA — Pushdown Automaton</h3>
+            <div class="sim-formal-def">M = (Q, Σ, Γ, δ, q₀, Z₀, F)</div>
+          </div>
+          <div class="sim-formal-body">
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Q</span>
+              <span class="sim-formal-desc">States:</span>
+              <code class="sim-formal-value" id="pdaSimStatesDisplay">{q0, q1, q2}</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Σ</span>
+              <span class="sim-formal-desc">Input alphabet:</span>
+              <code class="sim-formal-value" id="pdaSimAlphabetDisplay">{(, )}</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Γ</span>
+              <span class="sim-formal-desc">Stack alphabet:</span>
+              <code class="sim-formal-value" id="pdaSimStackAlphaDisplay">{Z₀, (}</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">q₀</span>
+              <span class="sim-formal-desc">Start state:</span>
+              <code class="sim-formal-value" id="pdaSimStartDisplay">q0</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Z₀</span>
+              <span class="sim-formal-desc">Initial stack symbol:</span>
+              <code class="sim-formal-value">Z₀</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">F</span>
+              <span class="sim-formal-desc">Accept states:</span>
+              <code class="sim-formal-value" id="pdaSimAcceptDisplay">{q2}</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-config-grid">
+          <div class="sim-config-panel">
+            <h4 class="sim-panel-title">Configuration</h4>
+
+            <div class="sim-field">
+              <label>Preset Machines</label>
+              <select id="pdaPreset" class="sim-select">
+                <option value="balanced_parens">Balanced Parentheses</option>
+                <option value="anbn">a^n b^n (Equal a's then b's)</option>
+                <option value="palindrome_marker">w#wᴿ Palindromes with center marker</option>
+                <option value="custom">Custom PDA...</option>
+              </select>
+            </div>
+
+            <div id="pdaCustomConfig" style="display:none">
+              <div class="sim-field">
+                <label>States (comma-separated)</label>
+                <input type="text" id="pdaCustomStates" class="sim-input" placeholder="q0, q1, q2" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Input Alphabet (comma-separated)</label>
+                <input type="text" id="pdaCustomAlphabet" class="sim-input" placeholder="a, b" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Stack Alphabet (comma-separated)</label>
+                <input type="text" id="pdaCustomStackAlpha" class="sim-input" placeholder="Z0, A" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Start State</label>
+                <input type="text" id="pdaCustomStart" class="sim-input" placeholder="q0" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Initial Stack Symbol</label>
+                <input type="text" id="pdaCustomInitStack" class="sim-input" placeholder="Z0" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Accept States (comma-separated)</label>
+                <input type="text" id="pdaCustomAccept" class="sim-input" placeholder="q2" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Transitions (one per line: state,input,stackTop→nextState,stackPush)</label>
+                <textarea id="pdaCustomTransitions" class="sim-textarea" placeholder="q0,(,Z0→q0,(Z0&#10;q0,(,(→q0,((&#10;q0,),( →q0,ε&#10;q0,ε,Z0→q2,Z0" spellcheck="false"></textarea>
+              </div>
+              <button id="pdaApplyCustom" class="sim-btn sim-btn-secondary">Apply Custom PDA</button>
+            </div>
+
+            <div class="sim-field">
+              <label>Input String</label>
+              <input type="text" id="pdaSimInput" class="sim-input sim-input-mono" placeholder="e.g. (()())" value="(()())" spellcheck="false">
+            </div>
+
+            <div class="sim-controls">
+              <button id="pdaSimStep" class="sim-btn sim-btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 4l14 8-14 8z"/></svg>
+                Step
+              </button>
+              <button id="pdaSimRun" class="sim-btn sim-btn-accent">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9z"/></svg>
+                Run All
+              </button>
+              <button id="pdaSimReset" class="sim-btn sim-btn-ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 105.64-8.36L1 10"/></svg>
+                Reset
+              </button>
+            </div>
+
+            <div class="sim-field sim-speed-control">
+              <label>Animation Speed</label>
+              <div class="sim-speed-row">
+                <span class="sim-speed-label">Slow</span>
+                <input type="range" id="pdaSimSpeed" min="100" max="1500" value="500" class="sim-slider">
+                <span class="sim-speed-label">Fast</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sim-visual-panel">
+            <h4 class="sim-panel-title">Live Visualization</h4>
+
+            <div class="sim-input-tape" id="pdaSimTape">
+              <div class="sim-tape-label">Input Tape</div>
+              <div class="sim-tape-cells" id="pdaSimTapeCells"></div>
+            </div>
+
+            <!-- PDA State + Stack -->
+            <div class="sim-pda-visual-area">
+              <div class="sim-pda-state-area">
+                <div class="sim-pda-current-state" id="pdaSimCurrentState">q0</div>
+                <div class="sim-pda-state-label">Current State</div>
+              </div>
+              <div class="sim-pda-stack-area">
+                <div class="sim-pda-stack-title">Stack (top → bottom)</div>
+                <div class="sim-pda-stack" id="pdaSimStackVis">
+                  <div class="sim-pda-stack-item sim-pda-stack-bottom">Z₀</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sim-transition-table-wrap">
+              <h4 class="sim-panel-title">δ Transition Rules</h4>
+              <div class="sim-transition-table sim-pda-trans-table" id="pdaSimTransTable"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-trace-card">
+          <h4 class="sim-panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            Execution Trace
+          </h4>
+          <div class="sim-trace" id="pdaSimTrace">
+            <div class="sim-trace-placeholder">Execution trace will appear here...</div>
+          </div>
+          <div class="sim-verdict" id="pdaSimVerdict"></div>
+        </div>
+      </div>
+
+      <!-- ======== TM SIMULATOR ======== -->
+      <div class="sim-panel" id="simTm" style="display:none">
+
+        <div class="sim-formal-card">
+          <div class="sim-formal-header">
+            <h3>TM — Turing Machine</h3>
+            <div class="sim-formal-def">M = (Q, Σ, Γ, δ, q₀, q_accept, q_reject)</div>
+          </div>
+          <div class="sim-formal-body">
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Q</span>
+              <span class="sim-formal-desc">States:</span>
+              <code class="sim-formal-value" id="tmSimStatesDisplay">{q0, q1, q2, q_accept, q_reject}</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Σ</span>
+              <span class="sim-formal-desc">Input alphabet:</span>
+              <code class="sim-formal-value" id="tmSimAlphabetDisplay">{0, 1}</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">Γ</span>
+              <span class="sim-formal-desc">Tape alphabet:</span>
+              <code class="sim-formal-value" id="tmSimTapeAlphaDisplay">{0, 1, X, Y, □}</code>
+            </div>
+            <div class="sim-formal-row">
+              <span class="sim-formal-symbol">q₀</span>
+              <span class="sim-formal-desc">Start state:</span>
+              <code class="sim-formal-value" id="tmSimStartDisplay">q0</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-config-grid">
+          <div class="sim-config-panel">
+            <h4 class="sim-panel-title">Configuration</h4>
+
+            <div class="sim-field">
+              <label>Preset Machines</label>
+              <select id="tmPreset" class="sim-select">
+                <option value="binary_increment">Binary Increment (+1)</option>
+                <option value="palindrome_check">Palindrome Checker over {0,1}</option>
+                <option value="zero_one_equal">Equal number of 0s and 1s</option>
+                <option value="custom">Custom Turing Machine...</option>
+              </select>
+            </div>
+
+            <div id="tmCustomConfig" style="display:none">
+              <div class="sim-field">
+                <label>States (comma-separated)</label>
+                <input type="text" id="tmCustomStates" class="sim-input" placeholder="q0, q1, q_accept, q_reject" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Input Alphabet (comma-separated)</label>
+                <input type="text" id="tmCustomAlphabet" class="sim-input" placeholder="0, 1" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Tape Alphabet (comma-separated, include blank □)</label>
+                <input type="text" id="tmCustomTapeAlpha" class="sim-input" placeholder="0, 1, X, □" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Start State</label>
+                <input type="text" id="tmCustomStart" class="sim-input" placeholder="q0" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Accept State</label>
+                <input type="text" id="tmCustomAccept" class="sim-input" placeholder="q_accept" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Reject State</label>
+                <input type="text" id="tmCustomReject" class="sim-input" placeholder="q_reject" spellcheck="false">
+              </div>
+              <div class="sim-field">
+                <label>Transitions (one per line: state,read→nextState,write,direction)</label>
+                <textarea id="tmCustomTransitions" class="sim-textarea" placeholder="q0,0→q1,X,R&#10;q1,0→q1,0,R&#10;q1,1→q2,Y,L" spellcheck="false"></textarea>
+              </div>
+              <button id="tmApplyCustom" class="sim-btn sim-btn-secondary">Apply Custom TM</button>
+            </div>
+
+            <div class="sim-field">
+              <label>Input String</label>
+              <input type="text" id="tmSimInput" class="sim-input sim-input-mono" placeholder="e.g. 1011" value="1011" spellcheck="false">
+            </div>
+
+            <div class="sim-controls">
+              <button id="tmSimStep" class="sim-btn sim-btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 4l14 8-14 8z"/></svg>
+                Step
+              </button>
+              <button id="tmSimRun" class="sim-btn sim-btn-accent">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9z"/></svg>
+                Run All
+              </button>
+              <button id="tmSimReset" class="sim-btn sim-btn-ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 105.64-8.36L1 10"/></svg>
+                Reset
+              </button>
+            </div>
+
+            <div class="sim-field sim-speed-control">
+              <label>Animation Speed</label>
+              <div class="sim-speed-row">
+                <span class="sim-speed-label">Slow</span>
+                <input type="range" id="tmSimSpeed" min="100" max="1500" value="500" class="sim-slider">
+                <span class="sim-speed-label">Fast</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sim-visual-panel">
+            <h4 class="sim-panel-title">Live Tape & Head</h4>
+
+            <!-- TM Tape -->
+            <div class="sim-tm-tape-area">
+              <div class="sim-tm-head-indicator" id="tmSimHeadIndicator">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                <span id="tmSimHeadStateLabel">q0</span>
+              </div>
+              <div class="sim-tm-tape" id="tmSimTapeCells"></div>
+            </div>
+
+            <!-- Current State Display -->
+            <div class="sim-tm-info-row">
+              <div class="sim-tm-info-item">
+                <span class="sim-tm-info-label">Current State</span>
+                <span class="sim-tm-info-value" id="tmSimCurrentState">q0</span>
+              </div>
+              <div class="sim-tm-info-item">
+                <span class="sim-tm-info-label">Head Position</span>
+                <span class="sim-tm-info-value" id="tmSimHeadPos">0</span>
+              </div>
+              <div class="sim-tm-info-item">
+                <span class="sim-tm-info-label">Steps</span>
+                <span class="sim-tm-info-value" id="tmSimStepCount">0</span>
+              </div>
+            </div>
+
+            <div class="sim-transition-table-wrap">
+              <h4 class="sim-panel-title">δ Transition Table</h4>
+              <div class="sim-transition-table" id="tmSimTransTable"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sim-trace-card">
+          <h4 class="sim-panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            Execution Trace
+          </h4>
+          <div class="sim-trace" id="tmSimTrace">
+            <div class="sim-trace-placeholder">Execution trace will appear here...</div>
+          </div>
+          <div class="sim-verdict" id="tmSimVerdict"></div>
         </div>
       </div>
     </section>
