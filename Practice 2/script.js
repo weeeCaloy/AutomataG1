@@ -2831,6 +2831,7 @@ class CalculatorUI {
       pill.addEventListener('click', () => {
         document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
+        pill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         this.switchSection(pill.dataset.section);
       });
     });
